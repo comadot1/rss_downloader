@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+  {{ macros.m_row_start() }}  
+  {{ macros.m_button('add_rss_btn', 'RSS 추가') }}
+  {{ macros.m_row_end() }}  
+
+  {{ macros.m_hr_head_top() }}
+  {{ macros.m_row_start('0') }}
+  {{ macros.m_col(1, macros.m_strong('ID')) }}
+  {{ macros.m_col(4, macros.m_strong('RSS')) }}
+  {{ macros.m_col(1, macros.m_strong('Interval')) }}
+  {{ macros.m_col(1, macros.m_strong('Account')) }}
+  {{ macros.m_col(4, macros.m_strong('Folder ID')) }}
+  {{ macros.m_col(1, macros.m_strong('Action')) }}
+  {{ macros.m_row_end() }}
+  {{ macros.m_hr_head_bottom() }}
+  <div id="rss_list_div"></div>
+</div> <!--전체-->
+
+
+<!-- Modal -->
+{{ macros.m_modal_start('rss_modal', 'RSS 추가', 'modal-lg') }}
+  <form id="rss_form">
+  <input type="hidden" id="rss_id" name="rss_id"/>
+  {{ macros.setting_input_text('name', 'Name', col='4', desc=['API에서 사용할 이름. 생략시 ID']) }}
+  {{ macros.setting_input_text_and_buttons('rss_url', 'RSS URL', [['rss_url_go_btn', '링크']]) }}
+
+  {{ macros.setting_radio('download_program', '다운로드 클라이언트', ['트랜스미션', '다운로드 스테이션', '큐빗토렌트', 'aria2']) }}
+  {{ macros.setting_input_text('download_path', '다운로드 경로', desc='선택 클라이언트에 맞는 경로를 입력해야 합니다.') }}
+
+  {{ macros.setting_radio('download_mode', '다운로드 모드', ['조건 사용', '모두 받기', '받지 않음. (Feed만 저장)']) }}
+  <div id="download_mode_1_div" class="collapse">
+  {{ macros.setting_input_textarea('include_keyword', '제목 - 포함', desc=['키워드 or 정규식>>다운로드 경로', '">>다운로드 경로" 생략 가능. 생략시 기본 경로. 구분자 || or Enter'], row='10') }}
+  {{ macros.setting_input_textarea('exclude_keyword', '제목 - 제외', desc=['키워드 or 정규식', '구분자 || or Enter'], row='3') }}
+  <!--
+  {{ macros.setting_checkbox('use_filename_filter', '파일명 필터 사용', desc=['Torrent Info 플러그인 설치 필수']) }}
+  <div id="use_filename_filter_div" class="collapse">
+    {{ macros.setting_input_textarea('filename_include_keyword', '파일명 - 포함', desc=['키워드 or 정규식>>다운로드 경로', '">>다운로드 경로" 생략 가능. 생략시 기본 경로. 구분자 || or Enter'], row='6') }}
+    {{ macros.setting_input_textarea('filename_exclude_keyword', '파일명 - 제외', desc=['키워드 or 정규식', '구분자 || or Enter'], row='3') }}
+  </div>
+  -->
+  </div>
+  {{ macros.setting_button([['rss_save_btn', '저장'], ['rss_remove_btn', '삭제']]) }}
+  </form>
+{{ macros.m_modal_end() }}
+
+
+<script type="text/javascript">
+var package_name = "{{arg['package_name'] }}";
+var default_download_program = "{{arg['default_download_program'] }}";
+var default_download_path = "{{arg['default_download_path'] }}";
+
+var current_data;
+
+$(document).ready(function(){
+  $.ajax({
+    url: '/' + package_name + '/ajax/rss_list',
+    type: "POST", 
+    cache: false,
+    data:{},
+    dataType: "json",
+    success: function (data) {
+      current_data = data;
+      make_rss_list(data.rss_list);
+    }
+  });
+});
+
+
+function set_download_mode(type) {
+  $('input[name=download_mode]')[parseInt(type)].checked = true;
+  if (type == '0') {
+    $('#download_mode_1_div').collapse('show')
+  } else {
+    $('#download_mode_1_div').collapse('hide')
+  }
+}
+
+$('input[type=radio][name=download_mode]').change(function() {
+  set_download_mode(this.value);
+});
+
+/*
+$('#use_filename_filter').change(function() {
+  use_collapse('use_filename_filter');
+});
+*/
+
+// 추가
+$("body").on('click', '#add_rss_btn', function(e){
+  e.preventDefault();
+  document.getElementById("rss_id").value = -1
+  document.getElementById("name").value = ''
+  document.getElementById("rss_url").value = ''
+  $('input[name=download_program]')[parseInt(default_download_program)].checked = true;
+  document.getElementById("download_path").value = default_download_path;
+  set_download_mode('0')
+  document.getElementById("include_keyword").value = '';
+  document.getElementById("exclude_keyword").value = '';
+  /*
+  $('#use_filename_filter').bootstrapToggle('off')
+  document.getElementById("filename_include_keyword").value = '';
+  document.getElementById("filename_exclude_keyword").value = '';
+  $('#use_filename_filter_div').collapse('hide')
+  */
+  document.getElementById("rss_remove_btn").disabled = true;
+  $("#rss_modal").modal();
+});
+
+// 수정
+$("body").on('click', '#rss_edit_btn', function(e){
+  e.preventDefault();
+  id = $(this).data('id')
+  for (i in current_data.rss_list) {
+    if (id == current_data.rss_list[i].id) {
+      document.getElementById("rss_id").value = current_data.rss_list[i].id;
+      document.getElementById("name").value = current_data.rss_list[i].name;
+      document.getElementById("rss_url").value = current_data.rss_list[i].rss_url;
+      $('input[name=download_program]')[parseInt(current_data.rss_list[i].download_program)].checked = true;
+      document.getElementById("download_path").value = current_data.rss_list[i].download_path;
+      set_download_mode(current_data.rss_list[i].download_mode);
+      document.getElementById("include_keyword").value = current_data.rss_list[i].include_keyword;
+      document.getElementById("exclude_keyword").value = current_data.rss_list[i].exclude_keyword;
+      /*
+      $('#use_filename_filter').bootstrapToggle( (current_data.rss_list[i].use_filename_filter) ? 'on' : 'off');
+      document.getElementById("filename_include_keyword").value = current_data.rss_list[i].filename_include_keyword;
+      document.getElementById("filename_exclude_keyword").value = current_data.rss_list[i].filename_exclude_keyword;
+      use_collapse('use_filename_filter');
+      */
+      document.getElementById("rss_remove_btn").disabled = false;
+      break
+    }
+  }
+  $("#rss_modal").modal();
+});
+
+
+
+// 잡 저장 버튼.. 추가일수도, 수정일수도..
+$("body").on('click', '#rss_save_btn', function(e){
+  e.preventDefault();
+  var formData = get_formdata('#rss_form');
+  $.ajax({
+    url: '/'+package_name+'/ajax/save_rss',
+    type: "POST", 
+    cache: false,
+    data: formData,
+    dataType: "json",
+    success: function (data) {
+      current_data = data
+      make_rss_list(data.rss_list)
+      if (data.ret == 'success') {
+        $.notify('<strong>설정을 저장하였습니다.</strong>', {
+          type: 'success'
+        });
+        $("#rss_modal").modal('hide');
+      } else if (data.ret == 'fail') {
+        $.notify('<strong>실패하였습니다.</strong>', {
+          type: 'warning'
+        });
+      }
+    }
+  });
+});
+
+$("body").on('click', '#rss_remove_btn', function(e){
+  e.preventDefault();
+  rss_id = document.getElementById("rss_id").value
+  $.ajax({
+    url: '/' + package_name + '/ajax/rss_remove',
+    type: "POST", 
+    cache: false,
+    data: {rss_id:rss_id},
+    dataType: "json",
+    success: function (data) {
+      current_data = data
+      make_rss_list(data.jobs)
+      if (data.ret == 'success') {
+        $.notify('<strong>삭제하였습니다.</strong>', {
+          type: 'success'
+        });
+        $("#rss_modal").modal('hide');
+      } else if (data.ret == 'fail') {
+        $.notify('<strong>삭제 실패</strong>', {
+          type: 'warning'
+        });
+        //$("#job_modal").modal('hide');
+      }
+    }
+  });
+});
+
+
+function make_rss_list(data) {
+  str = ''
+  for (i in data) {
+    //console.log(data[i])
+    str += m_row_start();
+    str += m_col(1, data[i].id);
+    tmp = data[i].created_time + '(생성)'
+    if (data[i].update_time != '')
+      tmp += '<br>' + data[i].update_time + '(업데이트)'
+    str += m_col(2, tmp);
+    str += m_col(1, ((data[i].name=='')?'--':data[i].name)  );
+    str += m_col(4, data[i].rss_url);
+    tmp = '모드 : '
+    if (data[i].download_mode == '0') {
+      tmp += '조건 사용'
+    } else if (data[i].download_mode == '1') {
+      tmp += '모두 받기'
+    } else if (data[i].download_mode == '2') {
+      tmp += 'Feed만 저장'
+    }
+    tmp += '<br>' + get_torrent_program_name(data[i].download_program)
+    tmp += '<br>'+data[i].download_path
+    str += m_col(2, tmp);
+    tmp = m_button('rss_edit_btn', '수정', [{'key':'id', 'value':data[i].id}]);
+    tmp += m_button('go_list_btn', '목록', [{'key':'id', 'value':data[i].id}]);
+    tmp = m_button_group(tmp)
+    str += m_col(2, tmp);
+    str += m_row_end();
+    if (i != data.length -1) str += m_hr();
+  }
+  document.getElementById("rss_list_div").innerHTML = str;
+}
+
+
+$("body").on('click', '#go_list_btn', function(e){
+  e.preventDefault();
+  id = $(this).data('id')
+  window.location.href = '/' + package_name + '/list?rss_id=' + id
+});
+
+// 링크
+$("body").on('click', '#rss_url_go_btn', function(e){
+  e.preventDefault();
+  url = document.getElementById("rss_url").value
+  window.open(url, "_blank");
+});
+
+
+</script>    
+{% endblock %}
