@@ -14,7 +14,7 @@
   <div class="tab-content" id="nav-tabContent">
      {{ macros.m_tab_content_start('normal', true) }}
       {{ macros.setting_global_scheduler_sub_button(arg['scheduler'], arg['is_running']) }}
-      {{ macros.setting_input_int('interval', '스케쥴링 실행 주기', value=arg['interval'], min='1', placeholder='10', desc='minute 단위') }}
+      {{ macros.setting_input_text('interval', '스케쥴링 실행 정보', value=arg['interval'], col='3', desc=['Inverval(minute 단위)이나 Cron 설정']) }}
       {{ macros.setting_checkbox('auto_start', '시작시 자동실행', value=arg['auto_start'], desc='On : 시작시 자동으로 스케쥴러에 등록됩니다.') }}
       {{ macros.setting_checkbox('allow_duplicate', '전체 DB에서 중복 허용', value=arg['allow_duplicate'], desc=['On : RSS1과 RSS2에 같은 링크가 있다면 두 개 모두 저장합니다.', 'Off : RSS가 다르더라도 동일 피드는 저장하지 않습니다.', '동일 RSS내에서는 항상 중복을 허용하지 않습니다.']) }}
     {{ macros.m_tab_content_end() }}
