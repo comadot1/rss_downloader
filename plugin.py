@@ -68,6 +68,9 @@ def first_menu(sub):
     arg = ModelSetting.to_dict()
     arg['package_name']  = package_name
     if sub == 'setting':
+
+        arg['scheduler'] = str(scheduler.is_include(package_name))
+        arg['is_running'] = str(scheduler.is_running(package_name))
         return render_template('%s_%s.html' % (package_name, sub), arg=arg)
     elif sub == 'rss':
         try:
