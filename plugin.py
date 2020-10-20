@@ -28,9 +28,9 @@ from .model import ModelSetting, ModelRss, ModelFeed
 #########################################################
 blueprint = Blueprint(package_name, package_name, url_prefix='/%s' %  package_name, template_folder=os.path.join(os.path.dirname(__file__), 'templates'))
 menu = {
-    'main' : [package_name, 'RSS 다운로드'],
+    'main' : [package_name, u'RSS 다운로드'],
     'sub' : [
-        ['setting', '설정'], ['rss', 'RSS 관리'], ['list', 'Feed 목록'], ['log', '로그']
+        ['setting', u'설정'], ['rss', u'RSS 관리'], ['list', u'Feed 목록'], ['log', u'로그']
     ],
     'category' : 'torrent'
 }  
@@ -40,7 +40,7 @@ plugin_info = {
     'name' : package_name,
     'category_name' : 'torrent',
     'developer' : 'soju6jan',
-    'description' : 'RSS 다운로드',
+    'description' : u'RSS 다운로드',
     'home' : 'https://github.com/soju6jan/' + package_name,
     'more' : '',
 }

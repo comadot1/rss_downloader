@@ -198,7 +198,7 @@ class ModelRss(db.Model):
             if by_dict:
                 tmp = [x.as_dict() for x in tmp]
             return tmp
-        except Exception, e:
+        except Exception as e:
             logger.error('Exception:%s', e)
             logger.error(traceback.format_exc())
     
@@ -351,7 +351,7 @@ class ModelFeed(db.Model):
             ret['list'] = [item.as_dict() for item in lists]
             ret['paging'] = Util.get_paging_info(count, page, page_size)
             return ret
-        except Exception, e:
+        except Exception as e:
             logger.debug('Exception:%s', e)
             logger.debug(traceback.format_exc())
 
@@ -372,7 +372,7 @@ class ModelFeed(db.Model):
                 )
             lists = query.all()
             return lists
-        except Exception, e:
+        except Exception as e:
             logger.debug('Exception:%s', e)
             logger.debug(traceback.format_exc())
     """
@@ -404,7 +404,7 @@ class ModelFeed(db.Model):
             if option != 'all':
                 query = query.filter(ModelFeed.status == int(option))
             return query
-        except Exception, e:
+        except Exception as e:
             logger.debug('Exception:%s', e)
             logger.debug(traceback.format_exc())
 
