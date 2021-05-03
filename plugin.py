@@ -154,9 +154,6 @@ def ajax(sub):
         elif sub == 'web_list':
             ret = ModelFeed.web_list(request)
             ret['rss_list'] = ModelRss.get_list(by_dict=True)
-            import json
-            logger.debug(ret)
-            logger.debug(json.dumps(ret, indent=4))
             return jsonify(ret)
         elif sub == 'feed_download':
             LogicNormal.feed_download(request.form['id'])

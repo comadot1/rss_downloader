@@ -160,7 +160,13 @@ class ModelRss(db.Model):
         ret['created_time'] = self.created_time.strftime('%m-%d %H:%M:%S')
         ret['update_time'] = '' if self.update_time is None else self.created_time.strftime('%m-%d %H:%M:%S')
         ret['name'] = self.name if self.name is not None else self.id
-        
+        if app.config['config']['is_py3']:
+            for key, value in list(ret.items()):
+                if isinstance(data, (bytes, bytearray)):
+                    logger.debug('key :', key)
+                    logger.debug('type(key) :', type(value))
+                    logger.debug('value :', value)
+                    ret['key'] = value.decode('utf-8')
         return ret
     
     @staticmethod
