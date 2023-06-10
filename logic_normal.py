@@ -126,6 +126,8 @@ class LogicNormal(object):
 
                         elif rss.download_mode == '1': #모두받기
                             request_download = True
+                            if feed.downloader_item.title == feed.downloader_item.download_url[20:60]:
+                                feed.downloader_item.title = feed.title
                             download_url = feed.link
                             download_program = rss.download_program
                             download_path = rss.download_path
@@ -158,6 +160,8 @@ class LogicNormal(object):
         try:
             feed = db.session.query(ModelFeed).filter_by(id=feed_id).with_for_update().first()
             if feed is not None:
+                if feed.downloader_item.title == feed.downloader_item.download_url[20:60]:
+                    feed.downloader_item.title = feed.title
                 download_url = feed.link
                 download_program = feed.rss.download_program
                 download_path = feed.rss.download_path
