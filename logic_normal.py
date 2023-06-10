@@ -108,6 +108,8 @@ class LogicNormal(object):
                                 if match or tmp[1] == 'all':
                                     request_download = True
                                     feed.log += u'\n매칭:%s' % tmp[0]
+                                    if feed.downloader_item.title == feed.downloader_item.download_url[20:60]:
+                                        feed.downloader_item.title = feed.title
                                     download_url = feed.link
                                     download_program = rss.download_program
                                     download_path = rss.download_path if tmp[1] is None else tmp[1]
